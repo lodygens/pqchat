@@ -1,0 +1,31 @@
+FROM debian
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Copy your exact script
+COPY install_oqs_openssl_debian.sh /root/install_oqs_openssl_debian.sh
+
+# Make it executable
+RUN chmod +x /root/install_oqs_openssl_debian.sh
+
+# Run it (as root, like in your test)
+RUN /root/install_oqs_openssl_debian.sh
+
+# ---------------------------------------------------------
+# Runtime environment variables (use shell expansion)
+# ---------------------------------------------------------
+ENV OPENSSL_CONF=/etc/ssl/openssl.cnf
+ENV LD_LIBRARY_PATH=/opt/liboqs/lib:$LD_LIBRARY_PATH
+    
+# Use entrypoint script to set OPENSSL_MODULES dynamically
+RUN echo '#!/bin/sh\n\
+ARCH=$(uname -m)\n\
+export OPENSSL_MODULES=/usr/lib/${ARCH}-linux-gnu/ossl-modules\n\
+exec "$@"' > /entrypoint.sh && chmod +x /entrypoint.sh
+    
+ENTRYPOINT ["/entrypoint.sh"]
+    
+##############################
+# Default command
+##############################
+CMD ["/bin/bash"]
