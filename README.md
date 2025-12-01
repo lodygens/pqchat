@@ -11,6 +11,12 @@ This should not be used in production.
 
 ---
 
+# License
+
+Apache 2.0
+
+---
+
 # Requirements:
 
 
