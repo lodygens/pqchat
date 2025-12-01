@@ -103,7 +103,7 @@ Example: `HELLO`
 ```json
 {
   "type": "HELLO",
-  "pseudo": "oleg",
+  "pseudo": "Mickey",
   "user_id": "hex(SHA256(id_pub||pseudo))",
   "ml_dsa_pub": "base64(...)", 
   "libp2p_peer_id": "12D3KooW...",
@@ -169,9 +169,9 @@ One binary, two roles:
 
 ```bash
 pqchat \
-  -pseudo "oleg" \
-  -ml-dsa-priv ./keys/oleg-ml-dsa-priv.bin \
-  -ml-dsa-pub  ./keys/oleg-ml-dsa-pub.bin \
+  -pseudo "Mickey" \
+  -ml-dsa-priv ./keys/mickey-ml-dsa-priv.bin \
+  -ml-dsa-pub  ./keys/mickey-ml-dsa-pub.bin \
   -listen "/ip4/0.0.0.0/tcp/0" \
   -peer "/ip4/…/tcp/4001/p2p/12D3KooW…"  # bootstrap/relay or other peers
 ```
