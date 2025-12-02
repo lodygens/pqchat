@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  relayer:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-oqs
+    container_name: pqchat-relayer
+    hostname: relayer
+    ports:
+      - "4001:4001/tcp"
+      - "4001:4001/udp"
+    networks:
+      pqchat-network:
+        ipv4_address: 172.20.0.10
+    command: relayer
+    environment:
+      - OPENSSL_CONF=/etc/ssl/openssl.cnf
+      - LD_LIBRARY_PATH=/opt/liboqs/lib
+
+  pqchat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-oqs
+    depends_on:
+      - relayer
+    networks:
+      - pqchat-network
+    stdin_open: true
+    tty: true
+    # Use RELAY_ADDR env var or connect directly using hostname
+    command: >
+      sh -c "
+        sleep 2 &&
+        if [ -n \"$$RELAY_ADDR\" ]; then
+          pqchat -relay \"$$RELAY_ADDR\"
+        else
+          echo \"⚠️  Set RELAY_ADDR env var with the relayer multiaddr\" &&
+          echo \"Example: RELAY_ADDR=/ip4/172.20.0.10/tcp/4001/p2p/<PEERID>\" &&
+          pqchat
+        fi
+      "
+    environment:
+      - OPENSSL_CONF=/etc/ssl/openssl.cnf
+      - LD_LIBRARY_PATH=/opt/liboqs/lib
+    deploy:
+      replicas: 1
+
+networks:
+  pqchat-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -17,6 +17,48 @@ Apache 2.0
 
 ---
 
+# TL;DR
+
+1. Build the Docker images
+
+```
+docker build --no-cache -t pqchat -f docker/Dockerfile-oqs .
+```
+
+2. Launch relayer :
+   
+```
+docker-compose up relayer
+
+...
+
+Attaching to pqchat-relayer
+pqchat-relayer  | 2025/12/02 10:22:19 failed to sufficiently increase receive buffer size (was: 208 kiB, wanted: 7168 kiB, got: 416 kiB). See https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes for details.
+pqchat-relayer  | Relay PeerID: 12D3KooWCFHCXBD3hs2uMwx6EdXKzqoMTRYhZ4nfW74gogSRLXJr
+pqchat-relayer  |   /ip4/127.0.0.1/tcp/4001
+pqchat-relayer  |   /ip4/127.0.0.1/udp/4001/quic-v1
+pqchat-relayer  |   /ip4/172.20.0.10/tcp/4001
+pqchat-relayer  |   /ip4/172.20.0.10/udp/4001/quic-v1
+
+```
+
+Recreate the multiaddr of the relayer; here `/ip4/172.20.0.10/tcp/4001/p2p/12D3KooWCFHCXBD3hs2uMwx6EdXKzqoMTRYhZ4nfW74gogSRLXJr`
+
+3. Launch a client
+
+You can launch as many as you want
+
+=> **You have to check the network name**
+
+```
+docker run -it --network pqchat_pqchat-network pqchat bash
+
+root@0b99af69dc18:/app# /usr/local/bin/pqchat -relay /ip4/172.20.0.10/tcp/4001/p2p/12D3KooWCFHCXBD3hs2uMwx6EdXKzqoMTRYhZ4nfW74gogSRLXJr
+
+```
+
+---
+
 # Requirements:
 
 
