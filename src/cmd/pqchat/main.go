@@ -165,7 +165,7 @@ func main() {
 }
 
 /* -----------------------------------------------------------
-   Connexion au relay
+This function connects to a relay
 -----------------------------------------------------------*/
 
 func connectRelay(ctx context.Context, h libhost.Host, maddrStr string) error {
@@ -187,7 +187,7 @@ func connectRelay(ctx context.Context, h libhost.Host, maddrStr string) error {
 }
 
 /* -----------------------------------------------------------
-   Connexion à un peer + handshake PQC côté client
+This connectx to a peer and make the handshake
 -----------------------------------------------------------*/
 
 func connectToPeer(ctx context.Context, h libhost.Host, maddrStr string) (*session.Session, network.Stream, error) {

@@ -15,13 +15,11 @@ else
     fi
 fi
 
-# --- CONFIG ---
 LIBOQS_PREFIX=/opt/liboqs
 OPENSSL_PREFIX=/usr
 BUILD_DIR=$HOME/tmp/oqs_build
 
 
-# Run update + install + cleanup
 $SUDO apt-get update && \
 $SUDO apt-get install -y \
     build-essential cmake ninja-build git pkg-config \
@@ -90,7 +88,6 @@ $SUDO ninja install
 #-- Installing: /usr/local/include/oqs-provider/oqs_prov.h
 
 
-# Create the profile.d script
 cat <<EOF | $SUDO tee /etc/profile.d/oqs-provider.sh >/dev/null
 # OQS provider environment for OpenSSL 3
 export OPENSSL_MODULES=$OPENSSL_PREFIX/lib/$ARCH-linux-gnu/ossl-modules
@@ -98,7 +95,6 @@ export OPENSSL_CONF=/etc/ssl/openssl.cnf
 export LD_LIBRARY_PATH=$LIBOQS_PREFIX/lib:\$LD_LIBRARY_PATH
 EOF
 
-# Apply to current shell
 export OPENSSL_MODULES=$OPENSSL_PREFIX/lib/$ARCH-linux-gnu/ossl-modules
 export OPENSSL_CONF=/etc/ssl/openssl.cnf
 export LD_LIBRARY_PATH=$LIBOQS_PREFIX/lib:$LD_LIBRARY_PATH
@@ -135,13 +131,13 @@ module = /usr/lib/$ARCH-linux-gnu/ossl-modules/oqsprovider.so
 
 EOF
 
-echo "✅ Testing OQS provider..."
+echo "Testing OQS provider..."
 openssl list -providers | grep OQS && echo "✅ OQS provider active" || echo "⚠️ OQS provider not detected"
 
-echo "✅ Testing KEM algorithms..."
+echo "Testing KEM algorithms..."
 openssl list -kem-algorithms | grep -i kem && echo "✅ KEM algorithms active" || echo "⚠️ KEM algorithms not detected"
 
-# Install liboqs-go
+
 git clone --depth=1 https://github.com/open-quantum-safe/liboqs-go
 cd liboqs-go
 cat  .config/liboqs-go.pc| sed "s/LIBOQS_INCLUDE_DIR=.*/LIBOQS_INCLUDE_DIR=\/include/"     > temp.pc

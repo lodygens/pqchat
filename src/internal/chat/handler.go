@@ -20,7 +20,7 @@ import (
 )
 
 func HandleIncoming(raw []byte) {
-	// Try Hello
+
 	var hello protocol.HelloMessage
 	if json.Unmarshal(raw, &hello) == nil && hello.Type == "HELLO" {
 		fmt.Println("[+] HELLO from", hello.Pseudo)
@@ -30,7 +30,6 @@ func HandleIncoming(raw []byte) {
 		return
 	}
 
-	// Try Chat
 	var chat protocol.ChatMessage
 	if json.Unmarshal(raw, &chat) == nil && chat.Type == "CHAT" {
 		HandleChat(&chat)
