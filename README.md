@@ -345,7 +345,7 @@ You can now:
 
 # Local test without any relay
 
-libp2p n’a *pas besoin* d’un relay si les deux peers sont *sur la même machine* et *sont en TCP/IP direct*.
+A relay is optional if both peers are on the same machine, connecting through TCP stack.
 
 1. Launch first peer
 
@@ -407,8 +407,6 @@ In a second terminal:
 ```bash
 ./bin/pqchat -pseudo alice -relay /ip4/127.0.0.1/tcp/4001/p2p/12D3KooWrelay
 ```
-
-Alice publie ses adresses.
 
 ---
 
