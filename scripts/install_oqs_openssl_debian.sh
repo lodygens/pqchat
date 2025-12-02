@@ -10,7 +10,7 @@ else
     if command -v sudo >/dev/null 2>&1; then
         SUDO="sudo"
     else
-        echo "❌ ERROR: Must be run as root or have sudo installed."
+        echo "ERROR: Must be run as root or have sudo installed."
         exit 1
     fi
 fi
@@ -23,7 +23,7 @@ BUILD_DIR=$HOME/tmp/oqs_build
 $SUDO apt-get update && \
 $SUDO apt-get install -y \
     build-essential cmake ninja-build git pkg-config \
-    libssl-dev wget perl \
+    libssl-dev wget perl tar wget \
     && \
 $SUDO rm -rf /var/lib/apt/lists/*
 
@@ -132,12 +132,26 @@ module = /usr/lib/$ARCH-linux-gnu/ossl-modules/oqsprovider.so
 EOF
 
 echo "Testing OQS provider..."
-openssl list -providers | grep OQS && echo "✅ OQS provider active" || echo "⚠️ OQS provider not detected"
+openssl list -providers | grep OQS && echo "INFO : OQS provider active" || echo "ERROR : OQS provider not detected"
 
 echo "Testing KEM algorithms..."
-openssl list -kem-algorithms | grep -i kem && echo "✅ KEM algorithms active" || echo "⚠️ KEM algorithms not detected"
+openssl list -kem-algorithms | grep -i kem && echo "INFO : KEM algorithms active" || echo "ERROR : KEM algorithms not detected"
 
+# Install Golang
+cd 
+GO_TAR_FILE=go1.25.4.linux-amd64.tar.gz
+[ $ARCH == "aarch64" ] && GO_TAR_FILE=go1.25.4.linux-arm64.tar.gz
+wget https://go.dev/dl/$GO_TAR_FILE
+rm -rf /usr/local/go
+tar -C /usr/local -xzf $GO_TAR_FILE
+rm -f $GO_TAR_FILE 
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
 
+# Install liboqs-go
+echo "Installing liboqs-go..."
+cd
 git clone --depth=1 https://github.com/open-quantum-safe/liboqs-go
 cd liboqs-go
 cat  .config/liboqs-go.pc| sed "s/LIBOQS_INCLUDE_DIR=.*/LIBOQS_INCLUDE_DIR=\/include/"     > temp.pc
@@ -147,5 +161,12 @@ mv temp.pc .config/liboqs-go.pc
 
 
 echo "export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$(pwd)/liboqs-go/.config" >>  /etc/profile.d/oqs-provider.sh
+echo "export PATH=$PATH:/usr/local/go/bin" >>  /etc/profile.d/oqs-provider.sh
+echo "export GOPATH=$HOME/go" >>  /etc/profile.d/oqs-provider.sh
+echo "export PATH=$PATH:$GOPATH/bin" >>  /etc/profile.d/oqs-provider.sh
+echo "export CGO_CFLAGS=\"-I/opt/liboqs/include/\"" >>  /etc/profile.d/oqs-provider.sh
+echo "export CGO_LDFLAGS=\"-L/opt/liboqs/lib/ -lssl -lcrypto -loqs -Wl,-rpath,/opt/liboqs/lib\"" >>  /etc/profile.d/oqs-provider.sh
+echo "export CGO_ENABLED=1" >>  /etc/profile.d/oqs-provider.sh
+
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$(pwd)/liboqs-go/.config
 go run examples/kem/kem.go && echo "✅ OQS Golang bindings installed" || echo "⚠️ OQS Golang bindings installation error"

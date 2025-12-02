@@ -2,7 +2,7 @@ FROM debian
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-COPY install_oqs_openssl_debian.sh /root/install_oqs_openssl_debian.sh
+COPY scripts/install_oqs_openssl_debian.sh /root/install_oqs_openssl_debian.sh
 
 RUN chmod +x /root/install_oqs_openssl_debian.sh
 
@@ -10,11 +10,28 @@ RUN /root/install_oqs_openssl_debian.sh
 
 ENV OPENSSL_CONF=/etc/ssl/openssl.cnf
 ENV LD_LIBRARY_PATH=/opt/liboqs/lib:$LD_LIBRARY_PATH
-    
+ENV PATH=$PATH:/usr/local/go/bin
+ENV GOPATH=/root/go
+ENV PKG_CONFIG_PATH=/root/liboqs-go/.config
+ENV CGO_ENABLED=1
+ENV CGO_CFLAGS="-I/opt/liboqs/include/"
+ENV CGO_LDFLAGS="-L/opt/liboqs/lib/ -lssl -lcrypto -loqs -Wl,-rpath,/opt/liboqs/lib"
+
+WORKDIR /app
+COPY go.mod go.sum ./
+COPY src ./src
+COPY Makefile ./
+
+RUN make all
+
+RUN cp bin/relayer /usr/local/bin/ && \
+    cp bin/pqchat /usr/local/bin/
+
 # Use entrypoint script to set OPENSSL_MODULES dynamically
 RUN echo '#!/bin/sh\n\
 ARCH=$(uname -m)\n\
 export OPENSSL_MODULES=/usr/lib/${ARCH}-linux-gnu/ossl-modules\n\
+export CGO_LDFLAGS="-L/lib/$ARCH-linux-gnu/ossl-modules/ -L/opt/liboqs/lib/ -lssl -lcrypto -loqs -Wl,-rpath,/opt/liboqs/lib"\n\
 exec "$@"' > /entrypoint.sh && chmod +x /entrypoint.sh
     
 ENTRYPOINT ["/entrypoint.sh"]
